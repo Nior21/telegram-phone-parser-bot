@@ -4,7 +4,8 @@
   "description": "Telegram bot for parsing and managing phone numbers",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "keep-alive": "node keep-alive.js"
   },
   "dependencies": {
     "telegraf": "^4.16.3",
