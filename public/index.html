@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phone Parser Bot - Управление контактами</title>
+    <style>
+        /* ... (весь предыдущий CSS остается без изменений) ... */
+
+        .telegram-button {
+            display: inline-block;
+            background: #0088cc;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 500;
+            margin-top: 20px;
+            transition: background 0.3s ease;
+        }
+
+        .telegram-button:hover {
+            background: #0077b5;
+        }
+
+        .instructions {
+            background: #f0f9ff;
+            border-left: 4px solid #0ea5e9;
+            padding: 20px;
+            margin: 30px 0;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>📱 Phone Parser Bot</h1>
+            <p>Управление контактами из Telegram чата</p>
+            <a href="https://t.me/your_bot_username" class="telegram-button" target="_blank">
+                📲 Открыть в Telegram
+            </a>
+        </header>
+
+        <div class="instructions">
+            <h3>📖 Инструкция по использованию:</h3>
+            <ol>
+                <li>Добавьте бота в ваш рабочий чат Telegram</li>
+                <li>Бот автоматически будет парсить номера телефонов из сообщений</li>
+                <li>Используйте этот интерфейс для поиска и редактирования контактов</li>
+                <li>Используйте команду <code>/search</code> в Telegram для быстрого поиска</li>
+            </ol>
+        </div>
+
+        <div class="search-section">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Поиск по номеру, имени, компании...">
+                <div class="search-icon">🔍</div>
+            </div>
+        </div>
+
+        <div class="contacts-list" id="contactsList">
+            <div class="loading">Загрузка контактов...</div>
+        </div>
+
+        <div class="stats" id="stats">
+            <div class="stat-item">
+                <div class="stat-value" id="totalContacts">0</div>
+                <div class="stat-label">Всего контактов</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="withNames">0</div>
+                <div class="stat-label">С именами</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="withCompanies">0</div>
+                <div class="stat-label">С компаниями</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно и скрипты остаются без изменений -->
+    <!-- ... -->
+</body>
+
+</html>
