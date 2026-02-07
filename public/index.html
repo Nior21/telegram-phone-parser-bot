@@ -1,58 +1,382 @@
 <!DOCTYPE html>
 <html lang="ru">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Phone Parser Bot - Управление контактами</title>
     <style>
-        /* ... (весь предыдущий CSS остается без изменений) ... */
-
-        .telegram-button {
-            display: inline-block;
-            background: #0088cc;
-            color: white;
-            padding: 12px 24px;
-            border-radius: 12px;
-            text-decoration: none;
-            font-weight: 500;
-            margin-top: 20px;
-            transition: background 0.3s ease;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
-        .telegram-button:hover {
-            background: #0077b5;
-        }
-
-        .instructions {
-            background: #f0f9ff;
-            border-left: 4px solid #0ea5e9;
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
             padding: 20px;
-            margin: 30px 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #fff, #e0e7ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            font-size: 1.1em;
+            opacity: 0.9;
+            margin-bottom: 20px;
+        }
+
+        .search-section {
+            padding: 30px;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .search-box {
+            position: relative;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 15px 20px;
+            padding-right: 50px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+        }
+
+        .contacts-list {
+            padding: 20px;
+            min-height: 400px;
+        }
+
+        .contact-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .contact-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            border-color: #c7d2fe;
+        }
+
+        .contact-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+
+        .contact-phone {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #1e293b;
+            font-family: 'Courier New', monospace;
+            background: #f1f5f9;
+            padding: 4px 8px;
+            border-radius: 6px;
+        }
+
+        .edit-btn {
+            background: #4f46e5;
+            color: white;
+            border: none;
+            padding: 8px 16px;
             border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            font-size: 14px;
+        }
+
+        .edit-btn:hover {
+            background: #4338ca;
+        }
+
+        .contact-info {
+            color: #64748b;
+            margin-bottom: 10px;
+        }
+
+        .contact-name {
+            color: #1e293b;
+            font-weight: 500;
+            margin-right: 10px;
+        }
+
+        .contact-company {
+            color: #475569;
+            font-style: italic;
+        }
+
+        .contact-context {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f8fafc;
+            border-radius: 8px;
+            color: #64748b;
+            font-size: 0.9em;
+            max-height: 100px;
+            overflow-y: auto;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal h2 {
+            margin-bottom: 20px;
+            color: #1e293b;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #475569;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #4f46e5;
+        }
+
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+        }
+
+        .btn-primary {
+            background: #4f46e5;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #4338ca;
+        }
+
+        .btn-secondary {
+            background: #f1f5f9;
+            color: #475569;
+        }
+
+        .btn-secondary:hover {
+            background: #e2e8f0;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #64748b;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #94a3b8;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            padding: 20px;
+            background: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 10px;
+            min-width: 120px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4f46e5;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #64748b;
+            margin-top: 5px;
+        }
+
+        .error-message {
+            background: #fee2e2;
+            border: 1px solid #fca5a5;
+            color: #dc2626;
+            padding: 12px;
+            border-radius: 8px;
+            margin: 20px;
+            text-align: center;
+        }
+
+        .api-status {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .api-status.connected {
+            background: #10b981;
+            color: white;
+        }
+
+        .api-status.error {
+            background: #ef4444;
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                border-radius: 10px;
+            }
+            
+            header {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 1.8em;
+            }
+            
+            .contact-header {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .edit-btn {
+                width: 100%;
+            }
+            
+            .stats {
+                flex-direction: column;
+                gap: 15px;
+            }
         }
     </style>
 </head>
-
 <body>
     <div class="container">
         <header>
+            <div class="api-status" id="apiStatus">Подключение...</div>
             <h1>📱 Phone Parser Bot</h1>
-            <p>Управление контактами из Telegram чата</p>
-            <a href="https://t.me/your_bot_username" class="telegram-button" target="_blank">
-                📲 Открыть в Telegram
-            </a>
+            <p class="subtitle">Управление контактами из Telegram чата</p>
         </header>
-
-        <div class="instructions">
-            <h3>📖 Инструкция по использованию:</h3>
-            <ol>
-                <li>Добавьте бота в ваш рабочий чат Telegram</li>
-                <li>Бот автоматически будет парсить номера телефонов из сообщений</li>
-                <li>Используйте этот интерфейс для поиска и редактирования контактов</li>
-                <li>Используйте команду <code>/search</code> в Telegram для быстрого поиска</li>
-            </ol>
-        </div>
 
         <div class="search-section">
             <div class="search-box">
@@ -60,6 +384,8 @@
                 <div class="search-icon">🔍</div>
             </div>
         </div>
+
+        <div id="errorContainer" style="display: none;"></div>
 
         <div class="contacts-list" id="contactsList">
             <div class="loading">Загрузка контактов...</div>
@@ -81,8 +407,292 @@
         </div>
     </div>
 
-    <!-- Модальное окно и скрипты остаются без изменений -->
-    <!-- ... -->
-</body>
+    <div class="modal" id="editModal">
+        <div class="modal-content">
+            <h2>✏️ Редактировать контакт</h2>
+            <form id="editForm">
+                <div class="form-group">
+                    <label>Номер телефона</label>
+                    <input type="text" id="editPhone" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Имя</label>
+                    <input type="text" id="editName" placeholder="Введите имя">
+                </div>
+                <div class="form-group">
+                    <label>Компания</label>
+                    <input type="text" id="editCompany" placeholder="Введите название компании">
+                </div>
+                <div class="form-group">
+                    <label>Контекст</label>
+                    <textarea id="editContext" placeholder="Дополнительная информация"></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeEditModal()">Отмена</button>
+                    <button type="submit" class="btn btn-primary">Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
+    <script>
+        let currentContactId = null;
+        let debounceTimer = null;
+
+        // Проверка подключения к API
+        async function checkApiConnection() {
+            const statusElement = document.getElementById('apiStatus');
+            try {
+                const response = await fetch('/api/test');
+                if (response.ok) {
+                    statusElement.textContent = 'API подключен';
+                    statusElement.className = 'api-status connected';
+                    return true;
+                } else {
+                    throw new Error('API не отвечает');
+                }
+            } catch (error) {
+                statusElement.textContent = 'Ошибка API';
+                statusElement.className = 'api-status error';
+                console.error('API connection error:', error);
+                return false;
+            }
+        }
+
+        // Показать ошибку
+        function showError(message) {
+            const errorContainer = document.getElementById('errorContainer');
+            errorContainer.innerHTML = `
+                <div class="error-message">
+                    ❌ ${message}
+                    <button onclick="this.parentElement.style.display='none'" style="margin-left: 10px; background: none; border: none; color: inherit; cursor: pointer;">×</button>
+                </div>
+            `;
+            errorContainer.style.display = 'block';
+        }
+
+        // Загрузка контактов
+        async function loadContacts(search = '') {
+            const list = document.getElementById('contactsList');
+            list.innerHTML = '<div class="loading">Загрузка контактов...</div>';
+
+            try {
+                const url = search 
+                    ? `/api/contacts?search=${encodeURIComponent(search)}`
+                    : '/api/contacts';
+                
+                console.log('Fetching contacts from:', url);
+                
+                const response = await fetch(url);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log('Received data:', data);
+
+                if (data.success && data.data && data.data.length > 0) {
+                    list.innerHTML = data.data.map(contact => `
+                        <div class="contact-card" onclick="openEditModal(${contact.id})">
+                            <div class="contact-header">
+                                <div class="contact-phone">${contact.normalized_phone || contact.phone || 'Без номера'}</div>
+                                <button class="edit-btn" onclick="event.stopPropagation(); openEditModal(${contact.id})">
+                                    ✏️ Редактировать
+                                </button>
+                            </div>
+                            <div class="contact-info">
+                                ${contact.name ? `<span class="contact-name">👤 ${contact.name}</span>` : ''}
+                                ${contact.company ? `<span class="contact-company">🏢 ${contact.company}</span>` : ''}
+                            </div>
+                            ${contact.context ? `<div class="contact-context">${contact.context}</div>` : ''}
+                        </div>
+                    `).join('');
+                    
+                    updateStats(data.data);
+                } else {
+                    list.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📭</div>
+                            <h3>${search ? 'Ничего не найдено' : 'Контакты не найдены'}</h3>
+                            <p>${search ? 'Попробуйте изменить поисковый запрос' : 'Начните общение в чате с ботом'}</p>
+                        </div>
+                    `;
+                    updateStats([]);
+                }
+            } catch (error) {
+                console.error('Error loading contacts:', error);
+                list.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">⚠️</div>
+                        <h3>Ошибка загрузки контактов</h3>
+                        <p>${error.message}</p>
+                        <button onclick="loadContacts()" style="margin-top: 20px; padding: 10px 20px; background: #4f46e5; color: white; border: none; border-radius: 8px; cursor: pointer;">
+                            Повторить попытку
+                        </button>
+                    </div>
+                `;
+                showError('Не удалось загрузить контакты. Проверьте подключение к серверу.');
+            }
+        }
+
+        // Обновление статистики
+        async function updateStats(contacts) {
+            try {
+                const response = await fetch('/api/stats');
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success) {
+                        const stats = data.data;
+                        document.getElementById('totalContacts').textContent = stats.total || 0;
+                        document.getElementById('withNames').textContent = stats.with_names || 0;
+                        document.getElementById('withCompanies').textContent = stats.with_companies || 0;
+                        return;
+                    }
+                }
+            } catch (error) {
+                console.log('Using local stats calculation');
+            }
+            
+            // Fallback к локальному расчету
+            const total = contacts.length;
+            const withNames = contacts.filter(c => c.name && c.name.trim() !== '').length;
+            const withCompanies = contacts.filter(c => c.company && c.company.trim() !== '').length;
+
+            document.getElementById('totalContacts').textContent = total;
+            document.getElementById('withNames').textContent = withNames;
+            document.getElementById('withCompanies').textContent = withCompanies;
+        }
+
+        // Открытие модального окна редактирования
+        async function openEditModal(contactId) {
+            currentContactId = contactId;
+            
+            try {
+                const response = await fetch(`/api/contacts/${contactId}`);
+                if (!response.ok) {
+                    throw new Error('Не удалось загрузить контакт');
+                }
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    const contact = data.data;
+                    document.getElementById('editPhone').value = contact.normalized_phone || contact.phone || '';
+                    document.getElementById('editName').value = contact.name || '';
+                    document.getElementById('editCompany').value = contact.company || '';
+                    document.getElementById('editContext').value = contact.context || '';
+                    document.getElementById('editModal').classList.add('active');
+                } else {
+                    throw new Error(data.error || 'Ошибка загрузки контакта');
+                }
+            } catch (error) {
+                console.error('Error loading contact:', error);
+                alert(`Ошибка загрузки контакта: ${error.message}`);
+            }
+        }
+
+        // Закрытие модального окна
+        function closeEditModal() {
+            document.getElementById('editModal').classList.remove('active');
+            currentContactId = null;
+            document.getElementById('editForm').reset();
+        }
+
+        // Сохранение контакта
+        async function saveContact(event) {
+            event.preventDefault();
+            
+            const contactData = {
+                name: document.getElementById('editName').value.trim() || null,
+                company: document.getElementById('editCompany').value.trim() || null,
+                context: document.getElementById('editContext').value.trim() || null
+            };
+
+            try {
+                const response = await fetch(`/api/contacts/${currentContactId}`, {
+                    method: 'PUT',
+                    headers: { 
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(contactData)
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    closeEditModal();
+                    const searchTerm = document.getElementById('searchInput').value;
+                    loadContacts(searchTerm);
+                    alert('Контакт успешно обновлен!');
+                } else {
+                    throw new Error(data.error || 'Ошибка сохранения');
+                }
+            } catch (error) {
+                console.error('Error saving contact:', error);
+                alert(`Ошибка сохранения контакта: ${error.message}`);
+            }
+        }
+
+        // Дебаунс для поиска
+        function debounceSearch() {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                const searchTerm = document.getElementById('searchInput').value;
+                console.log('Searching for:', searchTerm);
+                loadContacts(searchTerm);
+            }, 500); // 500ms задержка
+        }
+
+        // Инициализация при загрузке страницы
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Проверяем подключение к API
+            const apiConnected = await checkApiConnection();
+            
+            if (apiConnected) {
+                // Загружаем контакты
+                loadContacts();
+                
+                // Настраиваем обработчики событий
+                document.getElementById('searchInput').addEventListener('input', debounceSearch);
+                document.getElementById('editForm').addEventListener('submit', saveContact);
+                
+                // Закрытие модального окна по клику вне его
+                document.getElementById('editModal').addEventListener('click', (e) => {
+                    if (e.target === document.getElementById('editModal')) {
+                        closeEditModal();
+                    }
+                });
+                
+                // Закрытие по ESC
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape') {
+                        closeEditModal();
+                    }
+                });
+            } else {
+                showError('Не удалось подключиться к серверу. Пожалуйста, обновите страницу.');
+            }
+        });
+
+        // Функция для отладки - можно вызвать из консоли браузера
+        window.debugAPI = async function() {
+            console.log('Testing API endpoints...');
+            
+            try {
+                const testResponse = await fetch('/api/test');
+                console.log('Test endpoint:', await testResponse.json());
+                
+                const contactsResponse = await fetch('/api/contacts');
+                const contactsData = await contactsResponse.json();
+                console.log('Contacts endpoint:', contactsData);
+                
+                const statsResponse = await fetch('/api/stats');
+                console.log('Stats endpoint:', await statsResponse.json());
+            } catch (error) {
+                console.error('Debug error:', error);
+            }
+        };
+    </script>
+</body>
 </html>

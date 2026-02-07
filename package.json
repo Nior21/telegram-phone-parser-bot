@@ -5,7 +5,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "keep-alive": "node keep-alive.js"
+    "dev": "nodemon server.js"
   },
   "dependencies": {
     "telegraf": "^4.16.3",
